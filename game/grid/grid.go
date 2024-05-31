@@ -1,4 +1,4 @@
-package game
+package grid
 
 type Grid struct {
 	Size      int

@@ -1,16 +1,17 @@
-package game
+package rover
 
 import (
 	"fmt"
+	"go-rover/game/grid"
 )
 
 type Rover struct {
-	grid      *Grid
+	grid      *grid.Grid
 	position  [2]int
 	direction string
 }
 
-func NewRover(grid *Grid) *Rover {
+func NewRover(grid *grid.Grid) *Rover {
 	return &Rover{
 		grid:      grid,
 		position:  [2]int{0, 0},
