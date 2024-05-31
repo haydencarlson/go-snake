@@ -23,10 +23,14 @@ func PrintPosition(position [2]int) {
 	fmt.Println("New Rover Position (" + fmt.Sprint(position[0]) + ", " + fmt.Sprint(position[1]) + ")\r")
 }
 
+func PrintDirection(direction string) {
+	fmt.Println("New Rover Direction: " + direction + "\r")
+}
+
 func (r *Rover) Turn(direction string) {
 	r.direction = direction
 	r.grid.GameBoard[r.position[0]][r.position[1]] = r.getArrowPosition()
-	PrintPosition(r.position)
+	PrintDirection(r.direction)
 }
 
 func (r *Rover) getArrowPosition() string {
