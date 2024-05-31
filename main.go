@@ -5,8 +5,7 @@ import (
 	"os"
 	"syscall"
 
-	"go-rover/grid"
-	"go-rover/rover"
+	"go-rover/game"
 
 	"golang.org/x/term"
 )
@@ -23,8 +22,8 @@ func main() {
 
 	fmt.Println("Move your rover with the arrow keys (press 'Ctrl+C' to quit):\r")
 
-	grid := grid.NewGrid(10)
-	rover := rover.NewRover(grid)
+	grid := game.NewGrid(10)
+	rover := game.NewRover(grid)
 
 	for {
 		_, err := os.Stdin.Read(buf[:])
