@@ -13,7 +13,6 @@ func StartServer() {
 	router := mux.NewRouter()
 
 	log.Println("Registering routes...")
-	router.HandleFunc("/", handlers.GameHandler).Methods("POST")
 	router.HandleFunc("/ws", handlers.WebsocketHandler).Methods("GET")
 
 	addr := "0.0.0.0:8080"

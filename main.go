@@ -6,7 +6,4 @@ import (
 
 func main() {
 	api.StartServer()
-
-	// grid := grid.NewGrid(10)
-	// rover := rover.NewRover(grid)
 }
