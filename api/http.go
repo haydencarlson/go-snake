@@ -1,0 +1,24 @@
+package api
+
+import (
+	"go-rover/api/handlers"
+	"log"
+	"net/http"
+
+	"github.com/gorilla/mux"
+)
+
+func StartServer() {
+	log.Println("Initializing the router...")
+	router := mux.NewRouter()
+
+	log.Println("Registering routes...")
+	router.HandleFunc("/", handlers.GameHandler).Methods("POST")
+	router.HandleFunc("/ws", handlers.WebsocketHandler).Methods("GET")
+
+	addr := "0.0.0.0:8080"
+	log.Printf("Starting server on %s", addr)
+	if err := http.ListenAndServe(addr, router); err != nil {
+		log.Fatal("ListenAndServe:", err)
+	}
+}
