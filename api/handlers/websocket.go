@@ -1,11 +1,19 @@
 package handlers
 
 import (
+	"encoding/json"
+	"go-rover/game/grid"
+	"go-rover/game/rover"
 	"log"
 	"net/http"
 
 	"github.com/gorilla/websocket"
 )
+
+type Message struct {
+	Type string          `json:"type"`
+	Data json.RawMessage `json:"data"`
+}
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
@@ -21,6 +29,9 @@ func WebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
+	grid := grid.NewGrid(10)
+	rover := rover.NewRover(grid)
+
 	for {
 		// Read message from WebSocket
 		messageType, message, err := conn.ReadMessage()
@@ -28,13 +39,35 @@ func WebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println("Error reading message:", err)
 			break
 		}
+
+		log.Println("Received message type:", messageType)
+
+		var msg Message
+		err = json.Unmarshal(message, &msg)
+
+		if err != nil {
+			log.Println("Error unmarshalling message:", err)
+			continue
+		}
+
 		// Log the received message
 		log.Printf("Received: %s", message)
 
-		// Write message back to WebSocket
-		if err := conn.WriteMessage(messageType, message); err != nil {
-			log.Println("Error writing message:", err)
-			break
+		switch msg.Type {
+		case "initialize":
+			data, _ := json.Marshal(grid.GameBoard)
+			log.Println("Sending grid data:", string(data))
+			conn.WriteMessage(messageType, data)
+		case "move":
+			rover.Move()
+			data, _ := json.Marshal(grid.GameBoard)
+			conn.WriteMessage(messageType, data)
+		case "turn":
+			direction := ""
+			json.Unmarshal(msg.Data, &direction)
+			rover.Turn(direction)
+			data, _ := json.Marshal(grid.GameBoard)
+			conn.WriteMessage(messageType, data)
 		}
 	}
 }

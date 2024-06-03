@@ -3,6 +3,7 @@ package rover
 import (
 	"fmt"
 	"go-rover/game/grid"
+	"log"
 )
 
 type Rover struct {
@@ -37,6 +38,7 @@ func (r *Rover) getArrowPosition() string {
 	arrowPosition := ""
 
 	if r.direction == "E" {
+		log.Println("E turning E")
 		arrowPosition = ">"
 	} else if r.direction == "W" {
 		arrowPosition = "<"
