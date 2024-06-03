@@ -21,6 +21,11 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+func sendGridUpdate(conn *websocket.Conn, grid *grid.Grid) {
+	data, _ := json.Marshal(grid.GameBoard)
+	conn.WriteMessage(websocket.TextMessage, data)
+}
+
 func WebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -33,7 +38,6 @@ func WebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	rover := rover.NewRover(grid)
 
 	for {
-		// Read message from WebSocket
 		messageType, message, err := conn.ReadMessage()
 		if err != nil {
 			log.Println("Error reading message:", err)
@@ -50,24 +54,17 @@ func WebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		// Log the received message
 		log.Printf("Received: %s", message)
 
 		switch msg.Type {
 		case "initialize":
-			data, _ := json.Marshal(grid.GameBoard)
-			log.Println("Sending grid data:", string(data))
-			conn.WriteMessage(messageType, data)
 		case "move":
 			rover.Move()
-			data, _ := json.Marshal(grid.GameBoard)
-			conn.WriteMessage(messageType, data)
 		case "turn":
 			direction := ""
 			json.Unmarshal(msg.Data, &direction)
 			rover.Turn(direction)
-			data, _ := json.Marshal(grid.GameBoard)
-			conn.WriteMessage(messageType, data)
 		}
+		sendGridUpdate(conn, grid)
 	}
 }
