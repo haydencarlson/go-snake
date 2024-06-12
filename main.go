@@ -1,7 +1,7 @@
 package main
 
 import (
-	"go-rover/api"
+	"go-snake/api"
 )
 
 func main() {
