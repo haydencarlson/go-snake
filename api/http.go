@@ -1,7 +1,7 @@
 package api
 
 import (
-	"go-rover/api/handlers"
+	"go-snake/api/handlers"
 	"log"
 	"net/http"
 

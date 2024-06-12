@@ -1,4 +1,4 @@
-module go-rover
+module go-snake
 
 go 1.22.3
 
