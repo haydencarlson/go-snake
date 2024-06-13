@@ -3,7 +3,6 @@ package snake
 import (
 	"fmt"
 	"go-snake/game/grid"
-	"log"
 )
 
 type Snake struct {
@@ -20,37 +19,49 @@ func NewSnake(grid *grid.Grid) *Snake {
 	}
 }
 
-func (r *Snake) Move() {
-	r.grid.GameBoard[r.position[0]][r.position[1]] = 0
+func (s *Snake) Move() {
+	s.grid.GameBoard[s.position[0]][s.position[1]] = "empty"
 
-	if r.direction == "E" {
-		r.position[1] += 1
-	} else if r.direction == "W" {
-		r.position[1] -= 1
-	} else if r.direction == "N" {
-		r.position[0] -= 1
-	} else if r.direction == "S" {
-		r.position[0] += 1
+	switch s.direction {
+	case "E":
+		s.position[1]++
+	case "W":
+		s.position[1]--
+	case "N":
+		s.position[0]--
+	case "S":
+		s.position[0]++
 	}
 
-	if r.position[0] < 0 {
-		r.position[0] = 0
+	printPosition(s.position)
+}
+
+func (s *Snake) UpdatePosition() {
+	s.grid.GameBoard[s.position[0]][s.position[1]] = "snake"
+}
+
+func (r *Snake) CheckWallCollision() bool {
+	if r.position[0] < 0 || r.position[0] >= len(r.grid.GameBoard) {
+		return true
+	}
+	if r.position[1] < 0 || r.position[1] >= len(r.grid.GameBoard[0]) {
+		return true
 	}
 
-	if r.position[1] < 0 {
-		r.position[1] = 0
+	return false
+}
+
+func (r *Snake) CheckFoodCollision() bool {
+	if r.grid.GameBoard[r.position[0]][r.position[1]] == "food" {
+		return true
 	}
 
-	if r.position[0] > r.grid.Size-1 {
-		r.position[0] = r.grid.Size - 1
-	}
+	return false
+}
 
-	if r.position[1] > r.grid.Size-1 {
-		r.position[1] = r.grid.Size - 1
-	}
-
-	r.grid.GameBoard[r.position[0]][r.position[1]] = r.getArrowPosition()
-	printPosition(r.position)
+func (r *Snake) Turn(direction string) {
+	r.direction = direction
+	printDirection(r.direction)
 }
 
 func printPosition(position [2]int) {
@@ -59,27 +70,4 @@ func printPosition(position [2]int) {
 
 func printDirection(direction string) {
 	fmt.Println("New Snake Direction: " + direction + "\r")
-}
-
-func (r *Snake) Turn(direction string) {
-	r.direction = direction
-	r.grid.GameBoard[r.position[0]][r.position[1]] = r.getArrowPosition()
-	printDirection(r.direction)
-}
-
-func (r *Snake) getArrowPosition() string {
-	arrowPosition := ""
-
-	if r.direction == "E" {
-		log.Println("E turning E")
-		arrowPosition = ">"
-	} else if r.direction == "W" {
-		arrowPosition = "<"
-	} else if r.direction == "N" {
-		arrowPosition = "^"
-	} else if r.direction == "S" {
-		arrowPosition = "v"
-	}
-
-	return arrowPosition
 }

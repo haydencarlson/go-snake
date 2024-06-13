@@ -30,7 +30,7 @@ func upgradeConnection(w http.ResponseWriter, r *http.Request) (*websocket.Conn,
 }
 
 func initializeGame(conn *websocket.Conn) {
-	game := game.NewGame(conn, 1000)
+	game := game.NewGame(conn, 250, 10)
 	go listenForWebsocketMessages(conn, game)
 	game.Start()
 }
@@ -46,7 +46,12 @@ func listenForWebsocketMessages(websocket *websocket.Conn, game *game.Game) {
 		log.Println("Received message type:", messageType)
 
 		var msg WebsocketMessage
-		json.Unmarshal(message, &msg)
+		err = json.Unmarshal(message, &msg)
+
+		if err != nil {
+			log.Println("Error unmarshalling message:", err)
+			break
+		}
 
 		log.Printf("Received: %s", message)
 

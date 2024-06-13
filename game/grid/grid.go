@@ -6,7 +6,7 @@ import (
 
 type Grid struct {
 	Size      int
-	GameBoard [][]interface{}
+	GameBoard [][]string
 }
 
 func NewGrid(size int) *Grid {
@@ -14,33 +14,34 @@ func NewGrid(size int) *Grid {
 		Size:      size,
 		GameBoard: create(size),
 	}
-	grid.AddRandomObstacleToGrid()
+	grid.AddRandomFoodToGameBoard()
 	return grid
 }
 
-func (g *Grid) AddRandomObstacleToGrid() {
-	x, y := g.generateRandomObstaclePosition()
-	g.GameBoard[x][y] = "O"
+func (g *Grid) AddRandomFoodToGameBoard() {
+	x, y := g.generateRandomFoodPosition()
+	g.GameBoard[x][y] = "food"
 }
 
-func (g *Grid) generateRandomObstaclePosition() (int, int) {
+func (g *Grid) generateRandomFoodPosition() (int, int) {
 	x := rand.Intn(g.Size)
 	y := rand.Intn(g.Size)
-	for g.GameBoard[x][y] != 0 {
+	for g.GameBoard[x][y] == "snake" {
 		x = rand.Intn(g.Size)
 		y = rand.Intn(g.Size)
 	}
 	return x, y
 }
 
-func create(size int) [][]interface{} {
-	grid := make([][]interface{}, size)
+func create(size int) [][]string {
+	grid := make([][]string, size)
 	for i := 0; i < size; i++ {
-		grid[i] = make([]interface{}, size)
+		grid[i] = make([]string, size)
 		for j := 0; j < size; j++ {
-			grid[i][j] = 0
+			grid[i][j] = "empty"
 		}
 	}
-	grid[0][0] = ">"
+	grid[0][0] = "snake"
+
 	return grid
 }
