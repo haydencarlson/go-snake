@@ -1,7 +1,6 @@
 package snake
 
 import (
-	"fmt"
 	"go-snake/game/grid"
 )
 
@@ -42,8 +41,12 @@ func (s *Snake) Move() {
 
 	s.body = append([][2]int{newHead}, s.body[:len(s.body)-1]...)
 	s.head = newHead
+}
 
-	printPosition(s.head)
+func (s *Snake) UpdateBoardPosition() {
+	for _, pos := range s.body {
+		s.grid.GameBoard[pos[0]][pos[1]] = "snake"
+	}
 }
 
 func (s *Snake) Turn(direction string) {
@@ -64,13 +67,6 @@ func (s *Snake) Turn(direction string) {
 	}
 
 	s.direction = direction
-	printDirection(s.direction)
-}
-
-func (s *Snake) UpdatePosition() {
-	for _, pos := range s.body {
-		s.grid.GameBoard[pos[0]][pos[1]] = "snake"
-	}
 }
 
 func (s *Snake) CheckWallCollision() bool {
@@ -100,12 +96,4 @@ func (s *Snake) CheckSelfCollision() bool {
 
 func (s *Snake) Grow() {
 	s.body = append(s.body, s.body[len(s.body)-1])
-}
-
-func printPosition(head [2]int) {
-	fmt.Println("New Snake Position (" + fmt.Sprint(head[0]) + ", " + fmt.Sprint(head[1]) + ")\r")
-}
-
-func printDirection(direction string) {
-	fmt.Println("New Snake Direction: " + direction + "\r")
 }

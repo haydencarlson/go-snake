@@ -66,10 +66,13 @@ func (game *Game) tick() {
 	collidedWithFood := game.snake.CheckFoodCollision()
 	if collidedWithFood {
 		game.snake.Grow()
-		game.grid.AddRandomFoodToGameBoard()
 	}
 
-	game.snake.UpdatePosition()
+	game.snake.UpdateBoardPosition()
+
+	if collidedWithFood {
+		game.grid.AddRandomFoodToGameBoard()
+	}
 
 	game.sendGameBoardUpdate()
 }
