@@ -57,19 +57,14 @@ func (s *Snake) Turn(direction string) {
 		return
 	}
 
-	if direction == "N" && s.direction == "S" {
-		return
+	oppositeDirections := map[string]string{
+		"N": "S",
+		"S": "N",
+		"E": "W",
+		"W": "E",
 	}
 
-	if direction == "S" && s.direction == "N" {
-		return
-	}
-
-	if direction == "E" && s.direction == "W" {
-		return
-	}
-
-	if direction == "W" && s.direction == "E" {
+	if oppositeDirections[direction] == s.direction {
 		return
 	}
 

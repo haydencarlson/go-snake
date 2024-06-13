@@ -29,12 +29,6 @@ func upgradeConnection(w http.ResponseWriter, r *http.Request) (*websocket.Conn,
 	return conn, nil
 }
 
-func initializeGame(conn *websocket.Conn) {
-	game := game.NewGame(conn, 200, 10)
-	go listenForWebsocketMessages(conn, game)
-	game.Start()
-}
-
 func listenForWebsocketMessages(websocket *websocket.Conn, game *game.Game) {
 	for {
 		messageType, message, err := websocket.ReadMessage()
@@ -57,6 +51,12 @@ func listenForWebsocketMessages(websocket *websocket.Conn, game *game.Game) {
 
 		game.HandleWebsocketMessage(msg.Type, msg.Data)
 	}
+}
+
+func initializeGame(conn *websocket.Conn) {
+	game := game.NewGame(conn, 175, 10)
+	go listenForWebsocketMessages(conn, game)
+	game.Start()
 }
 
 func WebsocketHandler(w http.ResponseWriter, r *http.Request) {
