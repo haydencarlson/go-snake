@@ -12,8 +12,8 @@ import (
 type Game struct {
 	grid      *grid.Grid
 	tickTime  time.Duration
-	Snake     *snake.Snake
-	Websocket *websocket.Conn
+	websocket *websocket.Conn
+	snake     *snake.Snake
 }
 
 func NewGame(websocket *websocket.Conn, tickTime time.Duration, gridSize int) *Game {
@@ -23,8 +23,8 @@ func NewGame(websocket *websocket.Conn, tickTime time.Duration, gridSize int) *G
 	return &Game{
 		grid:      grid,
 		tickTime:  tickTime,
-		Snake:     snake,
-		Websocket: websocket,
+		snake:     snake,
+		websocket: websocket,
 	}
 }
 
@@ -42,7 +42,7 @@ func (game *Game) HandleWebsocketMessage(actionType string, data json.RawMessage
 	case "turn":
 		var direction string
 		json.Unmarshal(data, &direction)
-		game.Snake.Turn(direction)
+		game.snake.Turn(direction)
 	}
 }
 
@@ -51,28 +51,30 @@ func (game *Game) endGame() {
 	snake := snake.NewSnake(grid)
 
 	game.grid = grid
-	game.Snake = snake
+	game.snake = snake
 }
 
 func (game *Game) tick() {
-	game.Snake.Move()
-	collidedWithWall := game.Snake.CheckWallCollision()
+	game.snake.Move()
 
-	if collidedWithWall {
+	collidedWithWall := game.snake.CheckWallCollision()
+	collidedWithSelf := game.snake.CheckSelfCollision()
+	if collidedWithWall || collidedWithSelf {
 		game.endGame()
 	}
 
-	collidedWithFood := game.Snake.CheckFoodCollision()
+	collidedWithFood := game.snake.CheckFoodCollision()
 	if collidedWithFood {
+		game.snake.Grow()
 		game.grid.AddRandomFoodToGameBoard()
 	}
 
-	game.Snake.UpdatePosition()
+	game.snake.UpdatePosition()
 
 	game.sendGameBoardUpdate()
 }
 
 func (game *Game) sendGameBoardUpdate() {
 	data, _ := json.Marshal(game.grid.GameBoard)
-	game.Websocket.WriteMessage(websocket.TextMessage, data)
+	game.websocket.WriteMessage(websocket.TextMessage, data)
 }

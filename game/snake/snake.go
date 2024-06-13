@@ -7,65 +7,103 @@ import (
 
 type Snake struct {
 	grid      *grid.Grid
-	position  [2]int
+	head      [2]int
+	body      [][2]int
 	direction string
 }
 
 func NewSnake(grid *grid.Grid) *Snake {
+	initialPosition := [2]int{0, 0}
+
 	return &Snake{
 		grid:      grid,
-		position:  [2]int{0, 0},
+		head:      initialPosition,
+		body:      [][2]int{initialPosition},
 		direction: "E",
 	}
 }
 
 func (s *Snake) Move() {
-	s.grid.GameBoard[s.position[0]][s.position[1]] = "empty"
-
-	switch s.direction {
-	case "E":
-		s.position[1]++
-	case "W":
-		s.position[1]--
-	case "N":
-		s.position[0]--
-	case "S":
-		s.position[0]++
+	for _, pos := range s.body {
+		s.grid.GameBoard[pos[0]][pos[1]] = "empty"
 	}
 
-	printPosition(s.position)
+	newHead := s.head
+	switch s.direction {
+	case "E":
+		newHead[1]++
+	case "W":
+		newHead[1]--
+	case "N":
+		newHead[0]--
+	case "S":
+		newHead[0]++
+	}
+
+	s.body = append([][2]int{newHead}, s.body[:len(s.body)-1]...)
+	s.head = newHead
+
+	printPosition(s.head)
+}
+
+func (s *Snake) Turn(direction string) {
+	if direction == "N" && s.direction == "S" {
+		return
+	}
+
+	if direction == "S" && s.direction == "N" {
+		return
+	}
+
+	if direction == "E" && s.direction == "W" {
+		return
+	}
+
+	if direction == "W" && s.direction == "E" {
+		return
+	}
+
+	s.direction = direction
+	printDirection(s.direction)
 }
 
 func (s *Snake) UpdatePosition() {
-	s.grid.GameBoard[s.position[0]][s.position[1]] = "snake"
+	for _, pos := range s.body {
+		s.grid.GameBoard[pos[0]][pos[1]] = "snake"
+	}
 }
 
-func (r *Snake) CheckWallCollision() bool {
-	if r.position[0] < 0 || r.position[0] >= len(r.grid.GameBoard) {
+func (s *Snake) CheckWallCollision() bool {
+	if s.head[0] < 0 || s.head[0] >= len(s.grid.GameBoard) {
 		return true
 	}
-	if r.position[1] < 0 || r.position[1] >= len(r.grid.GameBoard[0]) {
-		return true
-	}
-
-	return false
-}
-
-func (r *Snake) CheckFoodCollision() bool {
-	if r.grid.GameBoard[r.position[0]][r.position[1]] == "food" {
+	if s.head[1] < 0 || s.head[1] >= len(s.grid.GameBoard[0]) {
 		return true
 	}
 
 	return false
 }
 
-func (r *Snake) Turn(direction string) {
-	r.direction = direction
-	printDirection(r.direction)
+func (s *Snake) CheckFoodCollision() bool {
+	return s.grid.GameBoard[s.head[0]][s.head[1]] == "food"
 }
 
-func printPosition(position [2]int) {
-	fmt.Println("New Snake Position (" + fmt.Sprint(position[0]) + ", " + fmt.Sprint(position[1]) + ")\r")
+func (s *Snake) CheckSelfCollision() bool {
+	for _, pos := range s.body[1:] {
+		if pos == s.head {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (s *Snake) Grow() {
+	s.body = append(s.body, s.body[len(s.body)-1])
+}
+
+func printPosition(head [2]int) {
+	fmt.Println("New Snake Position (" + fmt.Sprint(head[0]) + ", " + fmt.Sprint(head[1]) + ")\r")
 }
 
 func printDirection(direction string) {
