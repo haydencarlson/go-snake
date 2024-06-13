@@ -47,7 +47,7 @@ func (game *Game) HandleWebsocketMessage(actionType string, data json.RawMessage
 }
 
 func (game *Game) endGame() {
-	grid := grid.NewGrid(10)
+	grid := grid.NewGrid(game.grid.Size)
 	snake := snake.NewSnake(grid)
 
 	game.grid = grid

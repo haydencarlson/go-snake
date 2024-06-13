@@ -30,7 +30,7 @@ func upgradeConnection(w http.ResponseWriter, r *http.Request) (*websocket.Conn,
 }
 
 func initializeGame(conn *websocket.Conn) {
-	game := game.NewGame(conn, 1000, 10)
+	game := game.NewGame(conn, 250, 10)
 	go listenForWebsocketMessages(conn, game)
 	game.Start()
 }
