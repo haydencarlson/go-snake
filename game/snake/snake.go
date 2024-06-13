@@ -5,20 +5,22 @@ import (
 )
 
 type Snake struct {
-	grid      *grid.Grid
-	head      [2]int
-	body      [][2]int
-	direction string
+	grid           *grid.Grid
+	head           [2]int
+	body           [][2]int
+	direction      string
+	turnedThisTick bool
 }
 
 func NewSnake(grid *grid.Grid) *Snake {
 	initialPosition := [2]int{0, 0}
 
 	return &Snake{
-		grid:      grid,
-		head:      initialPosition,
-		body:      [][2]int{initialPosition},
-		direction: "E",
+		grid:           grid,
+		head:           initialPosition,
+		body:           [][2]int{initialPosition},
+		direction:      "E",
+		turnedThisTick: false,
 	}
 }
 
@@ -41,6 +43,7 @@ func (s *Snake) Move() {
 
 	s.body = append([][2]int{newHead}, s.body[:len(s.body)-1]...)
 	s.head = newHead
+	s.turnedThisTick = false
 }
 
 func (s *Snake) UpdateBoardPosition() {
@@ -50,6 +53,10 @@ func (s *Snake) UpdateBoardPosition() {
 }
 
 func (s *Snake) Turn(direction string) {
+	if s.turnedThisTick {
+		return
+	}
+
 	if direction == "N" && s.direction == "S" {
 		return
 	}
@@ -66,6 +73,7 @@ func (s *Snake) Turn(direction string) {
 		return
 	}
 
+	s.turnedThisTick = true
 	s.direction = direction
 }
 
