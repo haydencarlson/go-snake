@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type Message struct {
+type WebsocketMessage struct {
 	Type string          `json:"type"`
 	Data json.RawMessage `json:"data"`
 }
@@ -20,17 +20,24 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func WebsocketHandler(w http.ResponseWriter, r *http.Request) {
+func upgradeConnection(w http.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("Error upgrading to WebSocket:", err)
-		return
+		return nil, err
 	}
-	defer conn.Close()
+	return conn, nil
+}
 
-	game := game.NewGame(conn)
+func initializeGame(conn *websocket.Conn) {
+	game := game.NewGame(conn, 1000, 10)
+	go listenForWebsocketMessages(conn, game)
+	game.Start()
+}
+
+func listenForWebsocketMessages(websocket *websocket.Conn, game *game.Game) {
 	for {
-		messageType, message, err := conn.ReadMessage()
+		messageType, message, err := websocket.ReadMessage()
 		if err != nil {
 			log.Println("Error reading message:", err)
 			break
@@ -38,19 +45,26 @@ func WebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 		log.Println("Received message type:", messageType)
 
-		var msg Message
-		json.Unmarshal(message, &msg)
+		var msg WebsocketMessage
+		err = json.Unmarshal(message, &msg)
+
+		if err != nil {
+			log.Println("Error unmarshalling message:", err)
+			break
+		}
 
 		log.Printf("Received: %s", message)
 
-		switch msg.Type {
-		case "move":
-			game.Snake.Move()
-		case "turn":
-			direction := ""
-			json.Unmarshal(msg.Data, &direction)
-			game.Snake.Turn(direction)
-		}
-		game.SendGridUpdate()
+		game.HandleWebsocketMessage(msg.Type, msg.Data)
 	}
+}
+
+func WebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgradeConnection(w, r)
+	if err != nil {
+		return
+	}
+	defer conn.Close()
+
+	initializeGame(conn)
 }
