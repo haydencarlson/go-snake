@@ -60,7 +60,7 @@ func upgradeConnection(w http.ResponseWriter, r *http.Request) (*websocket.Conn,
 	return conn, nil
 }
 
-func handleWebsocketMessage(websocket *websocket.Conn, game *game.Game, actionType string, data json.RawMessage) {
+func handleWebsocketMessage(game *game.Game, actionType string, data json.RawMessage) {
 	switch actionType {
 	case "turn":
 		var direction string
@@ -97,6 +97,6 @@ func listenForWebsocketMessages(websocket *websocket.Conn, game *game.Game) {
 
 		log.Printf("Received: %s", message)
 
-		handleWebsocketMessage(websocket, game, msg.Type, msg.Data)
+		handleWebsocketMessage(game, msg.Type, msg.Data)
 	}
 }
