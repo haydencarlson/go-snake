@@ -13,6 +13,7 @@ func StartServer() {
 	router := mux.NewRouter()
 
 	log.Println("Registering routes...")
+
 	router.HandleFunc("/ws", handlers.WebsocketHandler).Methods("GET")
 
 	addr := "0.0.0.0:8080"
