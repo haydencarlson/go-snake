@@ -5,8 +5,10 @@ import (
 	"go-snake/game"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/websocket"
+	"github.com/joho/godotenv"
 )
 
 type WebsocketMessage struct {
@@ -20,6 +22,35 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+func WebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgradeConnection(w, r)
+	if err != nil {
+		return
+	}
+	defer conn.Close()
+
+	gameVars, err := godotenv.Read()
+
+	if err != nil {
+		log.Println("Error reading game variables:", err)
+		return
+	}
+
+	tickTime, err := strconv.Atoi(gameVars["TICK_TIME"])
+	if err != nil {
+		log.Println("Error converting TICK_TIME to int:", err)
+		return
+	}
+
+	gridSize, err := strconv.Atoi(gameVars["GRID_SIZE"])
+	if err != nil {
+		log.Println("Error converting grid size to int:", err)
+		return
+	}
+
+	newGame(conn, tickTime, gridSize)
+}
+
 func upgradeConnection(w http.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -27,6 +58,28 @@ func upgradeConnection(w http.ResponseWriter, r *http.Request) (*websocket.Conn,
 		return nil, err
 	}
 	return conn, nil
+}
+
+func handleWebsocketMessage(websocket *websocket.Conn, game *game.Game, actionType string, data json.RawMessage) {
+	switch actionType {
+	case "turn":
+		var direction string
+		json.Unmarshal(data, &direction)
+		game.Snake.Turn(direction)
+	case "start":
+
+		game.Start()
+		go listenForWebsocketMessages(websocket, game)
+		game.Start()
+	}
+}
+
+func newGame(conn *websocket.Conn, tickTime int, gridSize int) {
+	log.Printf("Starting game with grid size %s and tick time %s", strconv.Itoa(gridSize), strconv.Itoa(tickTime))
+
+	game := game.NewGame(conn, tickTime, gridSize)
+	go listenForWebsocketMessages(conn, game)
+	game.Start()
 }
 
 func listenForWebsocketMessages(websocket *websocket.Conn, game *game.Game) {
@@ -49,22 +102,6 @@ func listenForWebsocketMessages(websocket *websocket.Conn, game *game.Game) {
 
 		log.Printf("Received: %s", message)
 
-		game.HandleWebsocketMessage(msg.Type, msg.Data)
+		handleWebsocketMessage(websocket, game, msg.Type, msg.Data)
 	}
-}
-
-func initializeGame(conn *websocket.Conn) {
-	game := game.NewGame(conn, 175, 10)
-	go listenForWebsocketMessages(conn, game)
-	game.Start()
-}
-
-func WebsocketHandler(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgradeConnection(w, r)
-	if err != nil {
-		return
-	}
-	defer conn.Close()
-
-	initializeGame(conn)
 }
