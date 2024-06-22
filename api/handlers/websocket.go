@@ -66,11 +66,6 @@ func handleWebsocketMessage(websocket *websocket.Conn, game *game.Game, actionTy
 		var direction string
 		json.Unmarshal(data, &direction)
 		game.Snake.Turn(direction)
-	case "start":
-
-		game.Start()
-		go listenForWebsocketMessages(websocket, game)
-		game.Start()
 	}
 }
 
